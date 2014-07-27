@@ -1,0 +1,6 @@
+include *.py
+include *.rst
+include src/*.pyx
+include xxhash/*.c
+include xxhash/*.h
+exclude MANIFEST.in
