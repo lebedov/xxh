@@ -17,8 +17,8 @@ cdef extern from "xxhash.h":
 
     void* XXH64_init(unsigned int seed)
     XXH_errorcode XXH64_update(void *state, const void* input, unsigned int len)
-    unsigned int XXH64_intermediateDigest(void *state)
-    unsigned int XXH64_digest(void *state)
+    unsigned long XXH64_intermediateDigest(void *state)
+    unsigned long XXH64_digest(void *state)
     ctypedef struct XXH64_stateSpace_t:
         pass
 
@@ -91,7 +91,7 @@ cdef class Hasher64(object):
 
     cdef XXH64_stateSpace_t *_state
     
-    def __init__(self, unsigned int seed=0):
+    def __init__(self, unsigned long seed=0L):
         self._state = <XXH64_stateSpace_t *>XXH64_init(seed)
         
     cdef _update(self, data):        
