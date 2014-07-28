@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import sys
 from unittest import main, TestCase
 from xxhash import Hasher32, Hasher64
 
@@ -16,31 +17,37 @@ class TestHasher32(TestCase):
         self.assertEqual(h.digest(), 187479954)
 
         self.assertRaises(OverflowError, Hasher32, -1)
-
-    def test_invalid(self):
-        h = Hasher32()
-        self.assertRaises(TypeError, h.update, 1)
-        self.assertRaises(TypeError, h.update, True)
-        self.assertRaises(TypeError, h.update, None)
         
     def test_single_str(self):
         h = Hasher32()
         h.update('xxxyyy')
         self.assertEqual(h.digest(), 451874561)
 
+    def test_single_unicode(self):
+        h = Hasher32()
+        h.update(u'xxxyyy')
+        self.assertEqual(h.digest(), 3424585009)
+        
     def test_multiple_str(self):
         h = Hasher32()
         h.update('xxx')
         h.update('yyy')
         self.assertEqual(h.digest(), 451874561)
 
+    def test_single_int(self):
+        h = Hasher32()
+        h.update(1)
+        self.assertEqual(h.digest(), 149775153)
+
+    def test_single_long(self):
+        h = Hasher32()
+        h.update(long(sys.maxint))
+        self.assertEqual(h.digest(), 1886677411)
+                
     def test_sequence(self):
         h = Hasher32()
         h.update(['xxx', 'yyy'])
         self.assertEqual(h.digest(), 451874561)
-
-        h = Hasher32()
-        self.assertRaises(TypeError, h.update, ('x', 1))
 
     def test_bytearray(self):
         h = Hasher32()
@@ -74,31 +81,37 @@ class TestHasher64(TestCase):
         self.assertEqual(h.digest(), 15397730242686860875L)
 
         self.assertRaises(OverflowError, Hasher64, -1L)
-
-    def test_invalid(self):
-        h = Hasher64()
-        self.assertRaises(TypeError, h.update, 1)
-        self.assertRaises(TypeError, h.update, True)
-        self.assertRaises(TypeError, h.update, None)
         
     def test_single_str(self):
         h = Hasher64()
         h.update('xxxyyy')
         self.assertEqual(h.digest(), 17725107632544488034L)
 
+    def test_single_unicode(self):
+        h = Hasher64()
+        h.update(u'xxxyyy')
+        self.assertEqual(h.digest(), 11561759156150624853L)
+        
     def test_multiple_str(self):
         h = Hasher64()
         h.update('xxx')
         h.update('yyy')
         self.assertEqual(h.digest(), 17725107632544488034L)
 
+    def test_single_int(self):
+        h = Hasher64()
+        h.update(1)
+        self.assertEqual(h.digest(), 11468921228449061269L)
+
+    def test_single_long(self):
+        h = Hasher64()
+        h.update(long(sys.maxint))
+        self.assertEqual(h.digest(), 18406436390665352972L)
+                
     def test_sequence(self):
         h = Hasher64()
         h.update(['xxx', 'yyy'])
         self.assertEqual(h.digest(), 17725107632544488034L)
-
-        h = Hasher64()
-        self.assertRaises(TypeError, h.update, ('x', 1))
 
     def test_bytearray(self):
         h = Hasher64()
