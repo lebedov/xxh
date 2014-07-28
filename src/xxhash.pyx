@@ -3,6 +3,10 @@ from cpython.buffer cimport PyBUF_SIMPLE
 from cpython.buffer cimport Py_buffer
 from cpython.buffer cimport PyObject_GetBuffer
 
+from cpython.unicode cimport PyUnicode_AS_DATA
+from cpython.unicode cimport PyUnicode_Check
+from cpython.unicode cimport PyUnicode_GET_DATA_SIZE
+
 cdef enum XXH_errorcode:
     XXH_OK = 0
     XXH_ERROR
@@ -43,7 +47,14 @@ cdef class Hasher32(object):
         err = XXH32_update(<void *>self._state, <void *>buf.buf, buf.len)
         if err != 0:
             raise ValueError('error updating hash')
-            
+
+    cdef _update_unicode(self, data):
+        err = XXH32_update(<void *>self._state,
+                           <void *>PyUnicode_AS_DATA(data),
+                           PyUnicode_GET_DATA_SIZE(data))
+        if err != 0:
+            raise ValueError('error updating hash')
+        
     def update(self, data):
         """
         Update hash state.
@@ -60,10 +71,15 @@ cdef class Hasher32(object):
         by an object without a buffer interface, the hash state will be updated
         with the valid objects even though an exception will occur because of
         the latter object.
+
+        If a Unicode object is specified, the bytes in its internal buffer are
+        hashed - not its encoding using some codec.
         """
 
         if PyObject_CheckBuffer(data) != 0:
             self._update(data)
+        elif PyUnicode_Check(data) != 0:
+            self._update_unicode(data)
         else:
             for d in data:
                 self._update(d)
@@ -100,6 +116,13 @@ cdef class Hasher64(object):
         err = XXH64_update(<void *>self._state, <void *>buf.buf, buf.len)
         if err != 0:
             raise ValueError('error updating hash')
+
+    cdef _update_unicode(self, data):
+        err = XXH64_update(<void *>self._state,
+                           <void *>PyUnicode_AS_DATA(data),
+                           PyUnicode_GET_DATA_SIZE(data))
+        if err != 0:
+            raise ValueError('error updating hash')
             
     def update(self, data):
         """
@@ -117,10 +140,15 @@ cdef class Hasher64(object):
         by an object without a buffer interface, the hash state will be updated
         with the valid objects even though an exception will occur because of
         the latter object.
+
+        If a Unicode object is specified, the bytes in its internal buffer are
+        hashed - not its encoding using some codec.
         """
 
         if PyObject_CheckBuffer(data) != 0:
             self._update(data)
+        elif PyUnicode_Check(data) != 0:
+            self._update_unicode(data)
         else:
             for d in data:
                 self._update(d)
