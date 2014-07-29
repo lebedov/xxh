@@ -32,6 +32,7 @@ C_LONG_MAX = LONG_MAX
 C_LONG_MIN = LONG_MIN
 
 cdef extern from "xxhash.h":
+    unsigned int XXH32 (const void* input, unsigned int len, unsigned int seed)
     void* XXH32_init(unsigned int seed)
     XXH_errorcode XXH32_update(void *state, const void* input, unsigned int len)
     unsigned int XXH32_intermediateDigest(void *state)
@@ -39,13 +40,114 @@ cdef extern from "xxhash.h":
     ctypedef struct XXH32_stateSpace_t:
         pass
 
+    unsigned long long XXH64 (const void* input, unsigned int len, unsigned long long seed)
     void* XXH64_init(unsigned int seed)
     XXH_errorcode XXH64_update(void *state, const void* input, unsigned int len)
-    unsigned long XXH64_intermediateDigest(void *state)
-    unsigned long XXH64_digest(void *state)
+    unsigned long long XXH64_intermediateDigest(void *state)
+    unsigned long long XXH64_digest(void *state)
     ctypedef struct XXH64_stateSpace_t:
         pass
 
+def hash32(data, unsigned int seed=0):
+    """
+    Compute hash of object using xxHash 32 algorithm.
+
+    Parameters
+    ----------
+    data : object
+        Object to hash.
+    seed : int
+        Optional seed value (default = 0).
+
+    Returns
+    -------
+    hash : int
+        32-bit hash value.
+    """
+    
+    cdef Py_buffer buf
+    cdef bint data_bint
+    cdef long data_long
+    cdef long long data_long_long
+    
+    if PyObject_CheckBuffer(data):
+        PyObject_GetBuffer(data, &buf, PyBUF_SIMPLE)
+        return XXH32(<void *>buf.buf, buf.len, seed)
+    elif PyUnicode_Check(data):
+        return XXH32(<void *>PyUnicode_AS_DATA(data),
+                     PyUnicode_GET_DATA_SIZE(data),
+                     seed)
+    elif PyBool_Check(data):
+        data_bint = data
+        return XXH32(&data_bint, sizeof(bint), seed) 
+    elif PyInt_Check(data):
+        if data > INT_MAX or data < INT_MIN:
+            data_long = PyInt_AsLong(data)
+            return XXH32(&data_long, sizeof(long), seed)
+        else:
+            data_long_long = PyLong_AsLongLong(data)    
+            return XXH32(&data_long_long,
+                         sizeof(long long),
+                         seed)
+    elif PyLong_Check(data):
+        data_long_long = PyLong_AsLongLong(data)
+        return XXH32(&data_long_long, sizeof(long long), seed)                     
+    elif data is None:
+        data_bint = 0
+        return XXH32(&data_bint, sizeof(int), seed)
+    else:
+        raise ValueError('type \'%s\' not hashable' % type(data).__name__)
+    
+def hash64(data, unsigned long long seed=0):
+    """
+    Compute hash of object using xxHash 64 algorithm.
+
+    Parameters
+    ----------
+    data : object
+        Object to hash.
+    seed : long
+        Optional seed value (default = 0L).
+
+    Returns
+    -------
+    hash : long
+        64-bit hash value.
+    """
+    
+    cdef Py_buffer buf
+    cdef bint data_bint
+    cdef long data_long
+    cdef long long data_long_long
+    
+    if PyObject_CheckBuffer(data):
+        PyObject_GetBuffer(data, &buf, PyBUF_SIMPLE)
+        return XXH64(<void *>buf.buf, buf.len, seed)
+    elif PyUnicode_Check(data):
+        return XXH64(<void *>PyUnicode_AS_DATA(data),
+                     PyUnicode_GET_DATA_SIZE(data),
+                     seed)
+    elif PyBool_Check(data):
+        data_bint = data
+        return XXH64(&data_bint, sizeof(bint), seed) 
+    elif PyInt_Check(data):
+        if data > INT_MAX or data < INT_MIN:
+            data_long = PyInt_AsLong(data)
+            return XXH64(&data_long, sizeof(long), seed)
+        else:
+            data_long_long = PyLong_AsLongLong(data)    
+            return XXH64(&data_long_long,
+                         sizeof(long long),
+                         seed)
+    elif PyLong_Check(data):
+        data_long_long = PyLong_AsLongLong(data)
+        return XXH64(&data_long_long, sizeof(long long), seed)                     
+    elif data is None:
+        data_bint = 0
+        return XXH64(&data_bint, sizeof(int), seed)
+    else:
+        raise ValueError('type \'%s\' not hashable' % type(data).__name__)
+    
 cdef class Hasher32(object):
     """
     xxHash 32 hash object.
@@ -68,18 +170,18 @@ cdef class Hasher32(object):
 
     cdef int _update_unicode(self, data):
         return XXH32_update(<void *>self._state,
-                           <void *>PyUnicode_AS_DATA(data),
-                           PyUnicode_GET_DATA_SIZE(data))
+                            <void *>PyUnicode_AS_DATA(data),
+                            PyUnicode_GET_DATA_SIZE(data))
 
     cdef int _update_bool(self, bint data):
         return XXH32_update(<void *>self._state,
-                           <void *>&data,
-                           sizeof(bint))
+                            <void *>&data,
+                            sizeof(bint))
 
     cdef int _update_int(self, int data):
         return XXH32_update(<void *>self._state,
-                           <void *>&data,
-                           sizeof(int))
+                            <void *>&data,
+                            sizeof(int))
             
     cdef int _update_long(self, long data):
         return XXH32_update(<void *>self._state,
@@ -175,23 +277,23 @@ cdef class Hasher64(object):
 
     cdef int _update_unicode(self, data):
         return XXH64_update(<void *>self._state,
-                           <void *>PyUnicode_AS_DATA(data),
-                           PyUnicode_GET_DATA_SIZE(data))
+                            <void *>PyUnicode_AS_DATA(data),
+                            PyUnicode_GET_DATA_SIZE(data))
 
     cdef int _update_bool(self, bint data):
         return XXH64_update(<void *>self._state,
-                           <void *>&data,
-                           sizeof(bint))
+                            <void *>&data,
+                            sizeof(bint))
         
     cdef int _update_int(self, int data):
         return XXH64_update(<void *>self._state,
-                           <void *>&data,
-                           sizeof(int))
+                            <void *>&data,
+                            sizeof(int))
 
     cdef int _update_long(self, long data):
         return XXH64_update(<void *>self._state,
-                           <void *>&data,
-                           sizeof(long))
+                            <void *>&data,
+                            sizeof(long))
 
     cdef int _update_long_long(self, long long data):
         return XXH64_update(<void *>self._state,
