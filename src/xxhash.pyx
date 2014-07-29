@@ -6,9 +6,17 @@ from cpython.buffer cimport PyObject_GetBuffer
 from cpython.bool cimport PyBool_Check
 from cpython.int cimport PyInt_Check
 from cpython.int cimport PyInt_AsLong
+
 from cpython.long cimport PyLong_Check
 from cpython.long cimport PyLong_AsLongLong
 from cpython.long cimport PyLong_AsUnsignedLongLong
+
+from cpython.float cimport PyFloat_Check
+from cpython.float cimport PyFloat_AsDouble
+
+from cpython.complex cimport Py_complex
+from cpython.complex cimport PyComplex_Check
+from cpython.complex cimport PyComplex_AsCComplex
 
 from cpython.unicode cimport PyUnicode_AS_DATA
 from cpython.unicode cimport PyUnicode_Check
@@ -69,6 +77,8 @@ def hash32(data, unsigned int seed=0):
     cdef bint data_bint
     cdef long data_long
     cdef long long data_long_long
+    cdef double data_double
+    cdef Py_complex data_complex
     
     if PyObject_CheckBuffer(data):
         PyObject_GetBuffer(data, &buf, PyBUF_SIMPLE)
@@ -92,6 +102,12 @@ def hash32(data, unsigned int seed=0):
     elif PyLong_Check(data):
         data_long_long = PyLong_AsLongLong(data)
         return XXH32(&data_long_long, sizeof(long long), seed)                     
+    elif PyFloat_Check(data):
+        data_double = PyFloat_AsDouble(data)
+        return XXH32(&data_double, sizeof(double), seed)
+    elif PyComplex_Check(data):
+        data_complex = PyComplex_AsCComplex(data)
+        return XXH32(&data_complex, sizeof(Py_complex), seed)
     elif data is None:
         data_bint = 0
         return XXH32(&data_bint, sizeof(int), seed)
@@ -119,7 +135,9 @@ def hash64(data, unsigned long long seed=0):
     cdef bint data_bint
     cdef long data_long
     cdef long long data_long_long
-    
+    cdef double data_double
+    cdef Py_complex data_complex
+
     if PyObject_CheckBuffer(data):
         PyObject_GetBuffer(data, &buf, PyBUF_SIMPLE)
         return XXH64(<void *>buf.buf, buf.len, seed)
@@ -142,6 +160,12 @@ def hash64(data, unsigned long long seed=0):
     elif PyLong_Check(data):
         data_long_long = PyLong_AsLongLong(data)
         return XXH64(&data_long_long, sizeof(long long), seed)                     
+    elif PyFloat_Check(data):
+        data_double = PyFloat_AsDouble(data)
+        return XXH64(&data_double, sizeof(double), seed)
+    elif PyComplex_Check(data):
+        data_complex = PyComplex_AsCComplex(data)
+        return XXH64(&data_complex, sizeof(Py_complex), seed)
     elif data is None:
         data_bint = 0
         return XXH64(&data_bint, sizeof(int), seed)
@@ -197,7 +221,17 @@ cdef class Hasher32(object):
         return XXH32_update(<void *>self._state,
                             <void *>&data,
                             sizeof(unsigned long long))
-            
+
+    cdef int _update_float(self, double data):
+        return XXH32_update(<void *>self._state,
+                            <void *>&data,
+                            sizeof(double))
+
+    cdef int _update_complex(self, Py_complex data):
+        return XXH32_update(<void *>self._state,
+                            <void *>&data,
+                            sizeof(Py_complex))
+
     def update(self, data):
         """
         Update hash state.
@@ -235,6 +269,10 @@ cdef class Hasher32(object):
                 err = self._update_long_long(PyLong_AsLongLong(data)) # 64 bit
         elif PyLong_Check(data):
             err = self._update_long_long(PyLong_AsLongLong(data)) # > 64 bit will fail
+        elif PyFloat_Check(data):
+            err = self._update_float(PyFloat_AsDouble(data))
+        elif PyComplex_Check(data):
+            err = self._update_complex(PyComplex_AsCComplex(data))
         elif data is None:
             err = self._update_int(0)
         else:
@@ -304,7 +342,17 @@ cdef class Hasher64(object):
         return XXH64_update(<void *>self._state,
                             <void *>&data,
                             sizeof(unsigned long long))
-            
+
+    cdef int _update_float(self, double data):
+        return XXH64_update(<void *>self._state,
+                            <void *>&data,
+                            sizeof(double))
+
+    cdef int _update_complex(self, Py_complex data):
+        return XXH64_update(<void *>self._state,
+                            <void *>&data,
+                            sizeof(Py_complex))
+
     def update(self, data):
         """
         Update hash state.
@@ -342,6 +390,10 @@ cdef class Hasher64(object):
                 err = self._update_long_long(PyLong_AsLongLong(data)) # 64 bit
         elif PyLong_Check(data):
             err = self._update_long_long(PyLong_AsLongLong(data)) # > 64 bit will fail
+        elif PyFloat_Check(data):
+            err = self._update_float(PyFloat_AsDouble(data))
+        elif PyComplex_Check(data):
+            err = self._update_complex(PyComplex_AsCComplex(data))
         elif data is None:
             err = self._update_int(0)
         else:
