@@ -11,11 +11,11 @@ except ImportError:
 from setuptools import setup, Extension
 from Cython.Build import cythonize
 
-NAME = 'xxhash'
+NAME = 'xxh'
 VERSION = '0.1.0'
 AUTHOR = 'Lev Givon'
 AUTHOR_EMAIL = 'lev@columbia.edu'
-URL = 'https://github.com/lebedov/xxhash'
+URL = 'https://github.com/lebedov/xxh'
 MAINTAINER = AUTHOR
 MAINTAINER_EMAIL = AUTHOR_EMAIL
 DESCRIPTION = 'Python bindings for xxhash non-cryptographic hash algorithm'
@@ -33,8 +33,8 @@ CLASSIFIERS = [
     'Topic :: Software Development']
 
 extensions = [
-    Extension('xxhash',
-              sources=['src/xxhash.pyx', 'xxhash/xxhash.c'],
+    Extension('xxh',
+              sources=['src/xxh.pyx', 'xxhash/xxhash.c'],
               headers=['xxhash/xxhash.h'],
               include_dirs=['xxhash'],
               extra_compile_args=['-O3'])

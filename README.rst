@@ -18,12 +18,12 @@ Make sure you have `pip <http://pip.pypa.io>`_ and `cython
 <http://cython.org>`_' installed; once you do, install
 the package as follows::
 
-  pip install xxhash
+  pip install xxh
 
 Development
 -----------
 The latest source code can be obtained from the project website at
-`<https://github.com/lebedov/xxhash>`_.
+`<https://github.com/lebedov/xxh>`_.
 
 Authors & Acknowledgements
 --------------------------

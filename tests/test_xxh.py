@@ -2,7 +2,7 @@
 
 import sys
 from unittest import main, TestCase
-from xxhash import Hasher32, Hasher64
+from xxh import Hasher32, Hasher64
 
 class TestHasher32(TestCase):
     def test_init(self):
