@@ -14,8 +14,8 @@ using data encapsulated in a range of Python container classes.
 
 Quick Start
 -----------
-Make sure you have `pip <http://pip.pypa.io>`_ and `cython
-<http://cython.org>`_' installed; once you do, install
+Make sure you have `pip <http://pip.pypa.io>`_ and `Cython
+<http://cython.org>`_ installed; once you do, install
 the package as follows::
 
   pip install xxh
