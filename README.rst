@@ -20,7 +20,7 @@ with Python 2.7 and later.
     :target: https://pypi.python.org/pypi/xxh
     :alt: Downloads
 
- Quick Start
+Quick Start
 -----------
 Make sure you have `pip <http://pip.pypa.io>`_ and `Cython
 <http://cython.org>`_ installed; once you do, install
