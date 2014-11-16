@@ -13,7 +13,14 @@ provide better support for incremental updating of a hash using data
 encapsulated in a range of Python container classes. The package is compatible
 with Python 2.7 and later.
 
-Quick Start
+.. image:: https://pypip.in/version/xxh/badge.png
+    :target: https://pypi.python.org/pypi/xxh
+    :alt: Latest Version
+.. image:: https://pypip.in/d/xxh/badge.png
+    :target: https://pypi.python.org/pypi/xxh
+    :alt: Downloads
+
+ Quick Start
 -----------
 Make sure you have `pip <http://pip.pypa.io>`_ and `Cython
 <http://cython.org>`_ installed; once you do, install
