@@ -13,10 +13,10 @@ provide better support for incremental updating of a hash using data
 encapsulated in a range of Python container classes. The package is compatible
 with Python 2.7 and later.
 
-.. image:: https://pypip.in/version/xxh/badge.png
+.. image:: https://img.shields.io/pypi/v/xxh.svg
     :target: https://pypi.python.org/pypi/xxh
     :alt: Latest Version
-.. image:: https://pypip.in/d/xxh/badge.png
+.. image:: https://img.shields.io/pypi/dm/xxh.svg
     :target: https://pypi.python.org/pypi/xxh
     :alt: Downloads
 
