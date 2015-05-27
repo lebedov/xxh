@@ -22,9 +22,9 @@ with Python 2.7 and later.
 
 Quick Start
 -----------
-Make sure you have `pip <http://pip.pypa.io>`_ and `Cython
-<http://cython.org>`_ installed; once you do, install
-the package as follows::
+Make sure you have `pip <http://pip.pypa.io>`_ and `Cython 
+<https://cython.org>`_ installed; once you do, install
+the package as follows: ::
 
   pip install xxh
 
