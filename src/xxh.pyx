@@ -1,4 +1,4 @@
-# Copyright (c) 2014, Lev Givon
+# Copyright (c) 2014-2015, Lev Givon
 # All rights reserved.
 # Distributed under the terms of the BSD license:
 # http://www.opensource.org/licenses/bsd-license
@@ -45,21 +45,31 @@ C_LONG_MAX = LONG_MAX
 C_LONG_MIN = LONG_MIN
 
 cdef extern from "xxhash.h":
-    unsigned int XXH32 (const void* input, unsigned int len, unsigned int seed)
-    void* XXH32_init(unsigned int seed)
-    XXH_errorcode XXH32_update(void *state, const void* input, unsigned int len)
-    unsigned int XXH32_intermediateDigest(void *state)
-    unsigned int XXH32_digest(void *state)
-    ctypedef struct XXH32_stateSpace_t:
-        pass
+    unsigned int XXH32(const void* input, size_t length,
+                       unsigned int seed)
 
-    unsigned long long XXH64 (const void* input, unsigned int len, unsigned long long seed)
-    void* XXH64_init(unsigned int seed)
-    XXH_errorcode XXH64_update(void *state, const void* input, unsigned int len)
-    unsigned long long XXH64_intermediateDigest(void *state)
-    unsigned long long XXH64_digest(void *state)
-    ctypedef struct XXH64_stateSpace_t:
+    ctypedef struct XXH32_state_t:
+        pass    
+    XXH32_state_t* XXH32_createState()
+    XXH_errorcode XXH32_freeState(XXH32_state_t* statePtr)
+
+    XXH_errorcode XXH32_reset(XXH32_state_t* statePtr, unsigned int seed)
+    XXH_errorcode XXH32_update(XXH32_state_t* statePtr, const void* input,
+            size_t length)
+    unsigned int XXH32_digest(const XXH32_state_t* statePtr)
+
+    unsigned long long XXH64 (const void* input, size_t length,
+                              unsigned long long seed)
+    
+    ctypedef struct XXH64_state_t:
         pass
+    XXH64_state_t* XXH64_createState()
+    XXH_errorcode XXH64_freeState(XXH64_state_t* statePtr)
+    
+    XXH_errorcode XXH64_reset(XXH64_state_t* statePtr, unsigned int seed)
+    XXH_errorcode XXH64_update(XXH64_state_t *statePtr, const void* input,
+                               size_t length)
+    unsigned long long XXH64_digest(const XXH64_state_t* statePtr)
 
 def hash32(data, unsigned int seed=0):
     """
@@ -106,7 +116,7 @@ def hash32(data, unsigned int seed=0):
                          seed)
     elif PyLong_Check(data):
         data_long_long = PyLong_AsLongLong(data)
-        return XXH32(&data_long_long, sizeof(long long), seed)                     
+        return XXH32(&data_long_long, sizeof(long long), seed)
     elif PyFloat_Check(data):
         data_double = PyFloat_AsDouble(data)
         return XXH32(&data_double, sizeof(double), seed)
@@ -164,7 +174,7 @@ def hash64(data, unsigned long long seed=0):
                          seed)
     elif PyLong_Check(data):
         data_long_long = PyLong_AsLongLong(data)
-        return XXH64(&data_long_long, sizeof(long long), seed)                     
+        return XXH64(&data_long_long, sizeof(long long), seed)        
     elif PyFloat_Check(data):
         data_double = PyFloat_AsDouble(data)
         return XXH64(&data_double, sizeof(double), seed)
@@ -187,53 +197,57 @@ cdef class Hasher32(object):
         Seed value for hash computation. Must be nonnegative.
     """
 
-    cdef XXH32_stateSpace_t *_state
+    cdef XXH32_state_t *_state
 
     def __init__(self, unsigned int seed=0):
-        self._state = <XXH32_stateSpace_t *>XXH32_init(seed)
+        self._state = XXH32_createState()
+        XXH32_reset(self._state, seed)
 
+    def __dealloc__(self):
+        XXH32_freeState(self._state)
+        
     cdef int _update(self, data):
         cdef Py_buffer buf
         PyObject_GetBuffer(data, &buf, PyBUF_SIMPLE)
-        return XXH32_update(<void *>self._state, <void *>buf.buf, buf.len)
+        return XXH32_update(self._state, <void *>buf.buf, buf.len)
 
     cdef int _update_unicode(self, data):
-        return XXH32_update(<void *>self._state,
+        return XXH32_update(self._state,
                             <void *>PyUnicode_AS_DATA(data),
                             PyUnicode_GET_DATA_SIZE(data))
 
     cdef int _update_bool(self, bint data):
-        return XXH32_update(<void *>self._state,
+        return XXH32_update(self._state,
                             <void *>&data,
                             sizeof(bint))
 
     cdef int _update_int(self, int data):
-        return XXH32_update(<void *>self._state,
+        return XXH32_update(self._state,
                             <void *>&data,
                             sizeof(int))
             
     cdef int _update_long(self, long data):
-        return XXH32_update(<void *>self._state,
+        return XXH32_update(self._state,
                             <void *>&data,
                             sizeof(long))
     
     cdef int _update_long_long(self, long long data):
-        return XXH32_update(<void *>self._state,
+        return XXH32_update(self._state,
                             <void *>&data,
                             sizeof(long long))
 
     cdef int _update_unsigned_long_long(self, unsigned long long data):
-        return XXH32_update(<void *>self._state,
+        return XXH32_update(self._state,
                             <void *>&data,
                             sizeof(unsigned long long))
 
     cdef int _update_float(self, double data):
-        return XXH32_update(<void *>self._state,
+        return XXH32_update(self._state,
                             <void *>&data,
                             sizeof(double))
 
     cdef int _update_complex(self, Py_complex data):
-        return XXH32_update(<void *>self._state,
+        return XXH32_update(self._state,
                             <void *>&data,
                             sizeof(Py_complex))
 
@@ -296,7 +310,7 @@ cdef class Hasher32(object):
         This method may be repeatedly invoked after multiple state updates.
         """
         
-        return XXH32_intermediateDigest(<void *>self._state)
+        return XXH32_digest(self._state)
 
 cdef class Hasher64(object):
     """
@@ -308,53 +322,57 @@ cdef class Hasher64(object):
         Seed value for hash computation. Must be nonnegative.        
     """
 
-    cdef XXH64_stateSpace_t *_state
-    
+    cdef XXH64_state_t *_state
+
     def __init__(self, unsigned long seed=0L):
-        self._state = <XXH64_stateSpace_t *>XXH64_init(seed)
+        self._state = XXH64_createState()
+        XXH64_reset(self._state, seed)
+        
+    def __dealloc__(self):
+        XXH64_freeState(self._state)
         
     cdef int _update(self, data):
         cdef Py_buffer buf
         PyObject_GetBuffer(data, &buf, PyBUF_SIMPLE)
-        return XXH64_update(<void *>self._state, <void *>buf.buf, buf.len)
+        return XXH64_update(self._state, <void *>buf.buf, buf.len)
 
     cdef int _update_unicode(self, data):
-        return XXH64_update(<void *>self._state,
+        return XXH64_update(self._state,
                             <void *>PyUnicode_AS_DATA(data),
                             PyUnicode_GET_DATA_SIZE(data))
 
     cdef int _update_bool(self, bint data):
-        return XXH64_update(<void *>self._state,
+        return XXH64_update(self._state,
                             <void *>&data,
                             sizeof(bint))
         
     cdef int _update_int(self, int data):
-        return XXH64_update(<void *>self._state,
+        return XXH64_update(self._state,
                             <void *>&data,
                             sizeof(int))
 
     cdef int _update_long(self, long data):
-        return XXH64_update(<void *>self._state,
+        return XXH64_update(self._state,
                             <void *>&data,
                             sizeof(long))
 
     cdef int _update_long_long(self, long long data):
-        return XXH64_update(<void *>self._state,
+        return XXH64_update(self._state,
                             <void *>&data,
                             sizeof(long long))
 
     cdef int _update_unsigned_long_long(self, unsigned long long data):
-        return XXH64_update(<void *>self._state,
+        return XXH64_update(self._state,
                             <void *>&data,
                             sizeof(unsigned long long))
 
     cdef int _update_float(self, double data):
-        return XXH64_update(<void *>self._state,
+        return XXH64_update(self._state,
                             <void *>&data,
                             sizeof(double))
 
     cdef int _update_complex(self, Py_complex data):
-        return XXH64_update(<void *>self._state,
+        return XXH64_update(self._state,
                             <void *>&data,
                             sizeof(Py_complex))
 
@@ -417,5 +435,5 @@ cdef class Hasher64(object):
         This method may be repeatedly invoked after multiple state updates.
         """
         
-        return XXH64_intermediateDigest(<void *>self._state)
+        return XXH64_digest(self._state)
     

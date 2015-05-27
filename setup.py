@@ -12,7 +12,7 @@ from setuptools import setup, Extension
 from Cython.Build import cythonize
 
 NAME = 'xxh'
-VERSION = '0.1.0'
+VERSION = '0.1.1'
 AUTHOR = 'Lev Givon'
 AUTHOR_EMAIL = 'lev@columbia.edu'
 URL = 'https://github.com/lebedov/xxh'
@@ -39,8 +39,7 @@ CLASSIFIERS = [
 
 extensions = [
     Extension('xxh',
-              sources=['src/xxh.pyx', 'xxhash/xxhash.c'],
-              headers=['xxhash/xxhash.h'],
+              sources=['src/xxh.pyx', 'xxhash/xxhash.c'],                  
               include_dirs=['xxhash'],
               extra_compile_args=['-O3'])
     ]

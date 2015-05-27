@@ -8,4 +8,4 @@ The original xxHash library [3]_ was written by Yann Collett.
 
 .. [1] http://lebedov.github.io/
 .. [2] https://github.com/ewencp/pyhashxx/
-.. [3] http://code.google.com/p/xxhash/
+.. [3] https://github.com/Cyan4973/xxHash
