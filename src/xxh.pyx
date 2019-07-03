@@ -49,7 +49,7 @@ cdef extern from "xxhash.h":
                        unsigned int seed)
 
     ctypedef struct XXH32_state_t:
-        pass    
+        pass
     XXH32_state_t* XXH32_createState()
     XXH_errorcode XXH32_freeState(XXH32_state_t* statePtr)
 
@@ -60,12 +60,12 @@ cdef extern from "xxhash.h":
 
     unsigned long long XXH64 (const void* input, size_t length,
                               unsigned long long seed)
-    
+
     ctypedef struct XXH64_state_t:
         pass
     XXH64_state_t* XXH64_createState()
     XXH_errorcode XXH64_freeState(XXH64_state_t* statePtr)
-    
+
     XXH_errorcode XXH64_reset(XXH64_state_t* statePtr, unsigned int seed)
     XXH_errorcode XXH64_update(XXH64_state_t *statePtr, const void* input,
                                size_t length)
@@ -87,14 +87,14 @@ def hash32(data, unsigned int seed=0):
     hash : int
         32-bit hash value.
     """
-    
+
     cdef Py_buffer buf
     cdef bint data_bint
     cdef long data_long
     cdef long long data_long_long
     cdef double data_double
     cdef Py_complex data_complex
-    
+
     if PyObject_CheckBuffer(data):
         PyObject_GetBuffer(data, &buf, PyBUF_SIMPLE)
         return XXH32(<void *>buf.buf, buf.len, seed)
@@ -104,13 +104,13 @@ def hash32(data, unsigned int seed=0):
                      seed)
     elif PyBool_Check(data):
         data_bint = data
-        return XXH32(&data_bint, sizeof(bint), seed) 
+        return XXH32(&data_bint, sizeof(bint), seed)
     elif PyInt_Check(data):
         if data > INT_MAX or data < INT_MIN:
             data_long = PyInt_AsLong(data)
             return XXH32(&data_long, sizeof(long), seed)
         else:
-            data_long_long = PyLong_AsLongLong(data)    
+            data_long_long = PyLong_AsLongLong(data)
             return XXH32(&data_long_long,
                          sizeof(long long),
                          seed)
@@ -128,7 +128,7 @@ def hash32(data, unsigned int seed=0):
         return XXH32(&data_bint, sizeof(int), seed)
     else:
         raise ValueError('type \'%s\' not hashable' % type(data).__name__)
-    
+
 def hash64(data, unsigned long long seed=0):
     """
     Compute hash of object using xxHash 64 algorithm.
@@ -145,7 +145,7 @@ def hash64(data, unsigned long long seed=0):
     hash : long
         64-bit hash value.
     """
-    
+
     cdef Py_buffer buf
     cdef bint data_bint
     cdef long data_long
@@ -162,19 +162,19 @@ def hash64(data, unsigned long long seed=0):
                      seed)
     elif PyBool_Check(data):
         data_bint = data
-        return XXH64(&data_bint, sizeof(bint), seed) 
+        return XXH64(&data_bint, sizeof(bint), seed)
     elif PyInt_Check(data):
         if data > INT_MAX or data < INT_MIN:
             data_long = PyInt_AsLong(data)
             return XXH64(&data_long, sizeof(long), seed)
         else:
-            data_long_long = PyLong_AsLongLong(data)    
+            data_long_long = PyLong_AsLongLong(data)
             return XXH64(&data_long_long,
                          sizeof(long long),
                          seed)
     elif PyLong_Check(data):
         data_long_long = PyLong_AsLongLong(data)
-        return XXH64(&data_long_long, sizeof(long long), seed)        
+        return XXH64(&data_long_long, sizeof(long long), seed)
     elif PyFloat_Check(data):
         data_double = PyFloat_AsDouble(data)
         return XXH64(&data_double, sizeof(double), seed)
@@ -186,7 +186,7 @@ def hash64(data, unsigned long long seed=0):
         return XXH64(&data_bint, sizeof(int), seed)
     else:
         raise ValueError('type \'%s\' not hashable' % type(data).__name__)
-    
+
 cdef class Hasher32(object):
     """
     xxHash 32 hash object.
@@ -205,7 +205,7 @@ cdef class Hasher32(object):
 
     def __dealloc__(self):
         XXH32_freeState(self._state)
-        
+
     cdef int _update(self, data):
         cdef Py_buffer buf
         PyObject_GetBuffer(data, &buf, PyBUF_SIMPLE)
@@ -225,12 +225,12 @@ cdef class Hasher32(object):
         return XXH32_update(self._state,
                             <void *>&data,
                             sizeof(int))
-            
+
     cdef int _update_long(self, long data):
         return XXH32_update(self._state,
                             <void *>&data,
                             sizeof(long))
-    
+
     cdef int _update_long_long(self, long long data):
         return XXH32_update(self._state,
                             <void *>&data,
@@ -280,11 +280,11 @@ cdef class Hasher32(object):
         elif PyUnicode_Check(data):
             err = self._update_unicode(data)
         elif PyBool_Check(data):
-            err = self._update_bool(data)        
+            err = self._update_bool(data)
         elif PyInt_Check(data):
             if data > INT_MAX or data < INT_MIN:
                 err = self._update_long(PyInt_AsLong(data)) # 32 bit
-            else:                                                           
+            else:
                 err = self._update_long_long(PyLong_AsLongLong(data)) # 64 bit
         elif PyLong_Check(data):
             err = self._update_long_long(PyLong_AsLongLong(data)) # > 64 bit will fail
@@ -300,7 +300,7 @@ cdef class Hasher32(object):
             return
         if err:
             raise ValueError('error updating hash')
-        
+
     def digest(self):
         """
         Return hash digest.
@@ -309,7 +309,7 @@ cdef class Hasher32(object):
         -----
         This method may be repeatedly invoked after multiple state updates.
         """
-        
+
         return XXH32_digest(self._state)
 
 cdef class Hasher64(object):
@@ -319,7 +319,7 @@ cdef class Hasher64(object):
     Parameters
     ----------
     seed : long
-        Seed value for hash computation. Must be nonnegative.        
+        Seed value for hash computation. Must be nonnegative.
     """
 
     cdef XXH64_state_t *_state
@@ -327,10 +327,10 @@ cdef class Hasher64(object):
     def __init__(self, unsigned long seed=0L):
         self._state = XXH64_createState()
         XXH64_reset(self._state, seed)
-        
+
     def __dealloc__(self):
         XXH64_freeState(self._state)
-        
+
     cdef int _update(self, data):
         cdef Py_buffer buf
         PyObject_GetBuffer(data, &buf, PyBUF_SIMPLE)
@@ -345,7 +345,7 @@ cdef class Hasher64(object):
         return XXH64_update(self._state,
                             <void *>&data,
                             sizeof(bint))
-        
+
     cdef int _update_int(self, int data):
         return XXH64_update(self._state,
                             <void *>&data,
@@ -409,7 +409,7 @@ cdef class Hasher64(object):
         elif PyInt_Check(data):
             if data > INT_MAX or data < INT_MIN:
                 err = self._update_long(PyInt_AsLong(data)) # 32 bit
-            else:                                                           
+            else:
                 err = self._update_long_long(PyLong_AsLongLong(data)) # 64 bit
         elif PyLong_Check(data):
             err = self._update_long_long(PyLong_AsLongLong(data)) # > 64 bit will fail
@@ -425,7 +425,7 @@ cdef class Hasher64(object):
             return
         if err:
             raise ValueError('error updating hash')
-                            
+
     def digest(self):
         """
         Return hash digest.
@@ -434,6 +434,6 @@ cdef class Hasher64(object):
         -----
         This method may be repeatedly invoked after multiple state updates.
         """
-        
+
         return XXH64_digest(self._state)
-    
+

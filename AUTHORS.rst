@@ -2,7 +2,7 @@
 
 Authors & Acknowledgements
 ==========================
-The Python bindings in this package were written by Lev Givon [1]_; the
+The Python bindings in this package were written by Lev E. Givon [1]_; the
 interface design was inspired by pyhashxx [2]_, by Ewen Cheslack-Postava.
 The original xxHash library [3]_ was written by Yann Collett.
 

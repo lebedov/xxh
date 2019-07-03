@@ -2,18 +2,12 @@
 
 import os
 
-try:
-    import setuptools
-except ImportError:
-    from ez_setup import use_setuptools
-    use_setuptools()
-
 from setuptools import setup, Extension
 from Cython.Build import cythonize
 
 NAME = 'xxh'
-VERSION = '0.1.1'
-AUTHOR = 'Lev Givon'
+VERSION = '0.1.2'
+AUTHOR = 'Lev E. Givon'
 AUTHOR_EMAIL = 'lev@columbia.edu'
 URL = 'https://github.com/lebedov/xxh'
 MAINTAINER = AUTHOR
@@ -34,12 +28,15 @@ CLASSIFIERS = [
     'Programming Language :: Python :: 3.2',
     'Programming Language :: Python :: 3.3',
     'Programming Language :: Python :: 3.4',
+    'Programming Language :: Python :: 3.5',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
     'Topic :: Scientific/Engineering',
     'Topic :: Software Development']
 
 extensions = [
     Extension('xxh',
-              sources=['src/xxh.pyx', 'xxhash/xxhash.c'],                  
+              sources=['src/xxh.pyx', 'xxhash/xxhash.c'],
               include_dirs=['xxhash'],
               extra_compile_args=['-O3'])
     ]

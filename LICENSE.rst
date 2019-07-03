@@ -5,7 +5,7 @@ Licenses
 
 Python Wrapper
 --------------
-Copyright (c) 2014-2015, Lev Givon
+Copyright (c) 2014-2019, Lev E. Givon
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
