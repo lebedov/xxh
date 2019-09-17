@@ -1,18 +1,19 @@
 #!/usr/bin/env python
 
 import os
+import re
 
 from setuptools import setup, Extension
 
-NAME = 'xxh'
-VERSION = '0.1.2'
-AUTHOR = 'Lev E. Givon'
-AUTHOR_EMAIL = 'lev@columbia.edu'
-URL = 'https://github.com/lebedov/xxh'
-MAINTAINER = AUTHOR
-MAINTAINER_EMAIL = AUTHOR_EMAIL
-DESCRIPTION = 'Python bindings for xxhash non-cryptographic hash algorithm'
-LONG_DESCRIPTION = DESCRIPTION
+NAME =               'xxh'
+VERSION =            '0.1.2'
+AUTHOR =             'Lev E. Givon'
+AUTHOR_EMAIL =       'lev@columbia.edu'
+URL =                'https://github.com/lebedov/xxh'
+DESCRIPTION =        'Python bindings for xxhash non-cryptographic hash algorithm'
+with open('README.rst', 'r') as f:
+    LONG_DESCRIPTION = f.read()
+LONG_DESCRIPTION = re.search('.*(^Package Description.*)', LONG_DESCRIPTION, re.MULTILINE|re.DOTALL).group(1)
 DOWNLOAD_URL = URL
 LICENSE = 'BSD'
 CLASSIFIERS = [
@@ -48,12 +49,11 @@ setup(name=NAME,
       version=VERSION,
       author=AUTHOR,
       author_email = AUTHOR_EMAIL,
-      url = URL,
-      maintainer = MAINTAINER,
-      maintainer_email = MAINTAINER_EMAIL,
-      description = DESCRIPTION,
       license = LICENSE,
       classifiers = CLASSIFIERS,
+      description = DESCRIPTION,
+      long_description = LONG_DESCRIPTION,
+      url = URL,
       ext_modules = extensions,
       setup_requires = [
           'setuptools>=18.0',
