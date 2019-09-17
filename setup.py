@@ -3,7 +3,6 @@
 import os
 
 from setuptools import setup, Extension
-from Cython.Build import cythonize
 
 NAME = 'xxh'
 VERSION = '0.1.2'
@@ -55,5 +54,9 @@ setup(name=NAME,
       description = DESCRIPTION,
       license = LICENSE,
       classifiers = CLASSIFIERS,
-      ext_modules = cythonize(extensions),
+      ext_modules = extensions,
+      setup_requires = [
+          'setuptools>=18.0',
+          'cython'
+          ],
       test_suite = 'tests')
